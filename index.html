@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>散列画廊</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/index.css">
+</head>
+
+<body onselect="return false;">
+    <div class="wrap">
+        <div class="photo photo_front" onclick="trun(this)" id="photo_{{index}}">
+            <div class="photo-wrap">
+                <div class="side side-front">
+                    <p class="image"><img src="image/{{img}}" alt=""></p>
+                    <p class="caption">{{caption}}</p>
+                </div>
+                <div class="side side-back">
+                    <p class="desc">{{desc}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="image/data.js"></script>
+    <script>
+    var wrap;
+    window.onload = function() {
+        /*设置高度，使得photo居中*/
+        wrap = document.querySelector('.wrap');
+        wrap.style.height = document.documentElement.clientHeight + 'px';
+        addPhotos();
+    };
+
+    /*随机生成 range数组中之间的数*/
+    function random(range) {
+        var max = Math.max(range[0], range[1]);
+        var min = Math.min(range[0], range[1]);
+
+        var diff = max - min; //差值
+        var num = Math.ceil((Math.random() * diff + min));
+        return num;
+    }
+
+    //获取左右侧的位移范围
+    function range() {
+        let range = {
+            left: { x: [], y: [] },
+            right: { x: [], y: [] }
+        };
+
+        let wrap = {
+            w: document.querySelector('.wrap').clientWidth,
+            h: document.querySelector('.wrap').clientHeight
+        }
+
+        let photo = {
+            w: document.querySelector('.photo').clientWidth,
+            h: document.querySelector('.photo').clientHeight
+        }
+
+        range.left.x = [-photo.w, wrap.w / 2 - photo.w / 2];
+        range.left.y = [-photo.h, wrap.h];
+
+        range.right.x = [wrap.w / 2 + photo.w / 2, wrap.w];
+        range.right.y = [-photo.h, wrap.h];
+
+        return range;
+    }
+
+    // 排序海报
+    function rsortPhoto(n) {
+        //所有海报
+        let _photo = document.querySelectorAll('.photo');
+        let photos = [];
+        for (var i = 0; i < _photo.length; i++) {
+            _photo[i].className = _photo[i].className.replace(/\s*photo_center\s*/, '');
+            _photo[i].className = _photo[i].className.replace(/\s*photo_front\s*/, '');
+            _photo[i].className = _photo[i].className.replace(/\s*photo_back\s*/, ' ');
+            _photo[i].className += ' photo_front';
+
+            _photo[i].style.left = '';
+            _photo[i].style.top = '';
+
+            _photo[i].style.transform = 'rotate(360deg) scale(1.3)';
+
+            photos.push(_photo[i]);
+        }
+
+        var photo_center = document.querySelector('#photo_' + n);
+
+        photo_center.className += ' photo_center';
+
+        photos.splice(n - 1, 1); //删除展示在中间的海报
+
+        let photo_left = photos.splice(0, Math.ceil(photos.length / 2));
+        let photo_right = photos;
+
+        let ranges = range();
+
+        for (i in photo_left) {
+            let _photo = photo_left[i];
+            _photo.style.left = random(ranges.left.x) + 'px';
+            _photo.style.top = random(ranges.left.y) + 'px';
+
+            _photo.style.transform = 'rotate(' + random([-150, 150]) + 'deg) scale(1)';
+        }
+        for (s in photo_right) {
+            let _photo = photo_right[s];
+            _photo.style.left = random(ranges.right.x) + 'px';
+            _photo.style.top = random(ranges.right.y) + 'px';
+
+            _photo.style.transform = 'rotate(' + random([-150, 150]) + 'deg)  scale(1)';
+
+        }
+        let navs = document.querySelectorAll('.i');
+        for (let i = 0; i < navs.length; i++) {
+            navs[i].className = navs[i].className.replace(/\s*i_current\s*/, '');
+            navs[i].className = navs[i].className.replace(/\s*i_back\s*/, '');
+        }
+
+        let cur_nav = document.querySelector('#nav_' + n);
+        cur_nav.className += ' i_current';
+    }
+
+    // var data=data;
+    /*遍历所有海报*/
+    function addPhotos() {
+        var template = wrap.innerHTML;
+
+        var html = [];
+        var nav = [];
+
+        for (i in data) {
+            var _html = template
+                .replace('{{index}}', parseInt(i) + 1)
+                .replace('{{img}}', data[i].img)
+                .replace('{{caption}}', data[i].caption)
+                .replace('{{desc}}', data[i].desc);
+            html.push(_html);
+
+            nav.push('<span id="nav_' + (parseInt(i) + 1) + '" onclick="trun(document.querySelector(\'#photo_' + (parseInt(i) + 1) + '\'))" class="i"></span>')
+        }
+        html.push('<div class="nav">' + nav.join('') + '</div>');
+
+        wrap.innerHTML = html.join("");
+
+        /*设置随机海报显示居中*/
+        rsortPhoto(random([0, data.length]));
+    }
+
+    /*海报翻转*/
+    function trun(elem) {
+        var cls = elem.className;
+
+        var n = elem.id.split('_')[1];
+        var this_nav = document.querySelector('#nav_' + n);
+
+        if (!/photo_center/.test(cls)) {
+            rsortPhoto(n);
+            return;
+        }
+
+        if (/photo_back/.test(cls)) {
+            cls = cls.replace(/photo_back/, 'photo_front');
+            this_nav.className = this_nav.className.replace(/\s*i_back\s*/, '');
+        } else {
+            cls = cls.replace(/photo_front/, 'photo_back');
+            this_nav.className += ' i_back';
+        }
+        return elem.className = cls;
+    };
+    </script>
+</body>
+
+</html>
