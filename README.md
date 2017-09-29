@@ -1,9 +1,5 @@
-#JS 散列画廊
-#一级标题  
-##二级标题  
-###三级标题  
-####四级标题  
-#####五级标题  
-######六级标题  
+# JS 散列画廊
+
+[演示链接](https://qwe134214512.github.io/Hash-Gallery/index.html "悬停显示")
 
 README.md
